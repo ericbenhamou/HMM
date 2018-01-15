@@ -278,26 +278,14 @@ class Hmm(object):
             self.a = self.joined_cond_proba.sum(
                 0) / self.joined_cond_proba.sum((0, 1))
             mean_cond_proba = self.cond_proba.sum(0)
-            self.mu = (self.cond_proba[:,
-                                       :,
-                                       None] * self.train_data[:,
-                                                               None,
-                                                               :]).sum(0) / mean_cond_proba[:,
-                                                                                            None]
+            self.mu = (self.cond_proba[:,:,None] * 
+				self.train_data[:,None,:]).sum(0) / 
+					mean_cond_proba[:,None]
             self.sigma = np.zeros((self.K, 2, 2))
             for t in range(self.T):
                 self.sigma = self.sigma + self.cond_proba[t, :, None, None] * \
-                    (self.train_data[t,
-                                     None,
-                                     :] - self.mu)[:,
-                                                   :,
-                                                   None] * (self.train_data[t,
-                                                                            None,
-                                                                            :] - self.mu)[:,
-                                                                                          :,
-                                                                                          None].transpose(0,
-                                                                                                          2,
-                                                                                                          1)
+                    (self.train_data[t,None,:] - self.mu)[:,:,None] * \
+					(self.train_data[t,None,:] - self.mu)[:,:,None].transpose(0,2,1)
             self.sigma = self.sigma / mean_cond_proba[:, None, None]
 
             # compute expected_complete_log_likelihood
@@ -458,11 +446,7 @@ class Hmm(object):
             # Run Viterbi for t > 0
             for t in range(1, T):
                 for q in self.states:
-                    (self.max_proba[t, q], self.max_index[t -
-                                                          1, q]) = max((self.max_proba[t -
-                                                                                       1, q0] *
-                                                                        self.a[q0, q] *
-                                                                        self.b[t, q], q0) for q0 in self.states)
+                    (self.max_proba[t, q], self.max_index[t -1, q]) = max((self.max_proba[t -1, q0] * self.a[q0, q] * self.b[t, q], q0) for q0 in self.states)
                 self.scale_factor_viterbi[t] = self.max_proba[t, :].sum()
                 self.max_proba[t, :] = self.max_proba[t, :] / \
                     self.scale_factor_viterbi[t]
